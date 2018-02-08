@@ -9,6 +9,8 @@ import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.fxml.FXML;
@@ -165,9 +167,11 @@ public class PlayerController implements Initializable {
     
     private void handleReady() {
         Duration duration = mediaPlayer.getTotalDuration();
-        lengthText.setText(duration.toString());
+        String lengthString = String.format("%.01f ms", (float)duration.toMillis());
+        lengthText.setText(lengthString);
         Duration ct = mediaPlayer.getCurrentTime();
-        currentText.setText(ct.toString());
+        String currentTime = String.format("%.01f ms", (float)ct.toMillis());
+        currentText.setText(currentTime);
         currentVisualizer.start(numBands, vizPane);
         timeSlider.setMin(0);
         timeSlider.setMax(duration.toMillis());
@@ -182,10 +186,21 @@ public class PlayerController implements Initializable {
     private void handleUpdate(double timestamp, double duration, float[] magnitudes, float[] phases) {
         Duration ct = mediaPlayer.getCurrentTime();
         double ms = ct.toMillis();
-        currentText.setText(Double.toString(ms));
+        currentText.setText(String.format("%.01f ms", (float)ct.toMillis()));
         timeSlider.setValue(ms);
         
         currentVisualizer.update(timestamp, duration, magnitudes, phases);
+    }
+    
+    @FXML
+    private void handleSeekEnter(Event event) {
+        mediaPlayer.pause();
+    }
+    @FXML
+    private void handleSeekExit(Event event) {
+        Duration seekTime = new Duration(timeSlider.getValue());
+        mediaPlayer.seek(seekTime);
+        mediaPlayer.play();
     }
     
     @FXML
